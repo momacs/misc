@@ -203,11 +203,12 @@ case "$cmd" in
 		is_update_warranted=$(awk 'BEGIN{ print ('$version_new' > '$version') ? 1 : 0 }')
 		
                 if [ "$is_update_warranted" -eq "1" ]; then
-		    mv $self_name $self_name-old-v$version
-                    mv $self_name_tmp $self_name
+		    mv ./$self_name ./$self_name-old-v$version
+                    mv ./$self_name_tmp ./$self_name
+		    chown a+x ./$self_name
 		    echo "Update successful (from version $version to $version_new; old version retained)."
 		else
-                    rm $self_name_tmp
+                    rm ./$self_name_tmp
 		    echo "No update necessary."
                 fi
 		;;
