@@ -5,6 +5,7 @@
 
 
 version=0.1
+    # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
 self_path=$(dirname $0)
@@ -191,25 +192,24 @@ case "$cmd" in
             "$cmd_inf") echo "Self-management of the $self_name commmand-line utility.";;
 	    "edit") emacs -nw $0;;
             "update")
-		self_name_tmp=${self_name}.new.$$.$RANDOM
+		now=$(date +"%Y.%m.%d-%H.%M.%S")
+		self_name_tmp=${self_name}.new.$now.$$.$RANDOM
 		
 		cd $self_path
 		curl -o $self_name_tmp $url_github_raw/misc/master/bin/momacs
-		[ ! -f $self_name_tmp ] && echo "Could not reach the repository." && exit 1
+                [ ! -f $self_name_tmp ] && echo "Could not reach the repository." && exit 1
 		
 		version_new=$(grep -e '^version=.*$' $self_name_tmp | sed -n -e 's/^version=//p')
+		is_update_warranted=$(awk 'BEGIN{ print ('$version_new' > '$version') ? 1 : 0 }')
 		
-		#if [ ./$self_name_tmp -nt ./$self_name ]; then
-		#if [ "$new_version" -gt "$version" ]; then
-		if [ $(awk '{ print "'$version_new'"<"'$version'?1:0" }') -eq 1]; then
-		    #now=$(date +"%Y.%m.%d-%H.%M.%S")
-		    #mv $self_name $self_name-old-$now
-		    #mv $self_name_tmp $self_name
-		    echo "Update successful."
+                if [ "$is_update_warranted" -eq "1" ]; then
+		    mv $self_name $self_name-old-v$version
+                    mv $self_name_tmp $self_name
+		    echo "Update successful (from version $version to $version_new; old version retained)."
 		else
-		    #rm $self_name_tmp
+                    rm $self_name_tmp
 		    echo "No update necessary."
-		fi
+                fi
 		;;
             *) echo "$usage {$cmd_inf,edit,update}"; exit 1;;
 	esac
