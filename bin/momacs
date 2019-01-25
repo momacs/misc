@@ -196,7 +196,7 @@ case "$cmd" in
 		self_name_tmp=${self_name}.new.$now.$$.$RANDOM
 		
 		cd $self_path
-		curl -o $self_name_tmp $url_github_raw/misc/master/bin/momacs
+		curl -s -o $self_name_tmp $url_github_raw/misc/master/bin/momacs
                 [ ! -f $self_name_tmp ] && echo "Could not reach the repository." && exit 1
 		
 		version_new=$(grep -e '^version=.*$' $self_name_tmp | sed -n -e 's/^version=//p')
