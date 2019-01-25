@@ -12,13 +12,18 @@ curl -s -o momacs https://raw.githubusercontent.com/momacs/misc/master/bin/momac
 chown a+x momacs
 ```
 
+Make sure `~/bin` is in your $PATH (`echo $PATH`).  If it is not there and if you are using `bash` shell (default on MacOS and Ubuntu) do:
+```
+echo 'export PATH=$PATH:~/bin' >> ~/.bashrc
+```
+
+### Using
 To see the list of available commands, simply invoke it:
 ```
 momacs
 ```
 
-Make sure `~/bin` is in your $PATH (`echo $PATH`).  If it is not there and if you are using `bash` shell (default on MacOS and Ubuntu) do:
+### Updating
 ```
-echo "export PATH=$PATH:~/bin" >> ~/.bashrc
+momacs self update
 ```
-
