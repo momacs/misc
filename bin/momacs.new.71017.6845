@@ -201,7 +201,7 @@ case "$cmd" in
 		
 		#if [ ./$self_name_tmp -nt ./$self_name ]; then
 		#if [ "$new_version" -gt "$version" ]; then
-		if [ $(awk '{ print "'$version_new'"<"'$version'?1:0" }') -eq 1]; then
+		if [ $(awk '{ print "'$version_new'"<"'$version'" }') == 1]; then
 		    #now=$(date +"%Y.%m.%d-%H.%M.%S")
 		    #mv $self_name $self_name-old-$now
 		    #mv $self_name_tmp $self_name
