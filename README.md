@@ -1,7 +1,7 @@
 # Miscellaneous
 
 ## `momacs` command-line utility
-The [`momacs`](bin/momacs) utility alleviates the pain of performing common and often long and repetitive tasks (e.g., downloading the latest versions of [PRAM](https://github.com/momacs/pram)).
+The [`momacs`](bin/momacs) utility alleviates the pain of performing common and often long, repetitive, and error-prone tasks (e.g., downloading the latest versions of [PRAM](https://github.com/momacs/pram)).
 
 ### Installing
 To download the utility and make it executable, run the following commands:
@@ -12,7 +12,7 @@ curl -s -o momacs https://raw.githubusercontent.com/momacs/misc/master/bin/momac
 chown a+x momacs
 ```
 
-Make sure `~/bin` is in your $PATH (`echo $PATH`).  If it is not there and if you are using `bash` shell (default on MacOS and Ubuntu) do:
+Make sure `~/bin` is in your $PATH (`echo $PATH`).  If it is not there and if you are using the `bash` shell (default on MacOS and Ubuntu), do:
 ```
 echo 'export PATH=$PATH:~/bin' >> ~/.bashrc
 ```
