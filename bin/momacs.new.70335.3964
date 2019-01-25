@@ -4,8 +4,6 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.1
-
 self_name=$(basename $0)
 self_path=$(dirname $0)
 
@@ -13,7 +11,6 @@ github_user=momacs
 github_email=momacs@pitt.edu
 
 url_github=https://github.com/$github_user
-url_github_raw=https://raw.githubusercontent.com/$github_user
 
 cmd=$1
 cmd_inf=i
@@ -189,28 +186,25 @@ case "$cmd" in
     "self")
         case "$2" in
             "$cmd_inf") echo "Self-management of the $self_name commmand-line utility.";;
-	    "edit") emacs -nw $0;;
             "update")
 		self_name_tmp=${self_name}.new.$$.$RANDOM
 		
 		cd $self_path
-		curl -o $self_name_tmp $url_github_raw/misc/master/bin/momacs
-		[ ! -f $self_name_tmp ] && echo "Could not reach the repository." && exit 1
+		curl -o $self_name_tmp $url_github/misc/bin/momacs
 		
-		version_new=$(grep -e '^version=.*$' $self_name_tmp | sed -n -e 's/^version=//p')
+		[ ! -f $self_name_tmp ] && echo "Could not download a new version." && exit 1
 		
-		#if [ ./$self_name_tmp -nt ./$self_name ]; then
-		if [ "$new_version" -gt "$version" ]; then
-		    #now=$(date +"%Y.%m.%d-%H.%M.%S")
-		    #mv $self_name $self_name-old-$now
-		    #mv $self_name_tmp $self_name
+		if [ ./$self_name_tmp -nt ./$self_name ]; then
+		    now=$(date +"%Y.%m.%d-%H.%M.%S")
+		    mv $self_name $self_name-old-$now
+		    mv $self_name_tmp $self_name
 		    echo "Update successful."
 		else
-		    #rm $self_name_tmp
+		    rm $self_name_tmp
 		    echo "No update necessary."
 		fi
 		;;
-            *) echo "$usage {$cmd_inf,edit,update}"; exit 1;;
+            *) echo "$usage {$cmd_inf,update}"; exit 1;;
 	esac
         ;;
     
