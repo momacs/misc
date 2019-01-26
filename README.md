@@ -24,6 +24,7 @@ momacs
 ```
 
 ### Updating
+To check if a more up-to-date version is available in this repository, and to automatically download it, do:
 ```
 momacs self update
 ```
