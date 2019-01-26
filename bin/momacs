@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.12
+version=0.13
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -16,12 +16,18 @@ github_email=momacs@pitt.edu
 url_github=https://github.com/$github_user
 url_github_raw=https://raw.githubusercontent.com/$github_user
 
+ret_req_argn=10
+ret_req_venv=11
+ret_req_git_url=12
+
 cmd=$1
 cmd_inf=i
 usage="Usage: $self_name $cmd"
 
 
 # ----------------------------------------------------------------------------------------------
+#
+# Displays a [y/n] confirmation prompt and returns 0 only if 'y' or 'Y' is entered.
 #
 # Args:
 #   $1 prompt text
@@ -47,6 +53,30 @@ req_argn() {
 }
 
 
+# ----------------------------------------------------------------------------------------------
+#
+# Require the URL of a git repository (e.g., GitHub or GitLab).
+#
+# Args:
+#   $1 the URL to be verified
+#
+req_git_url() {
+    git ls-remote $1 2&> /dev/null
+    [ "$?" -ne 0 ] && echo "The URL does not point to a git repository or you have insufficient access rights to that repository." && exit $ret_req_git_url
+    return 0
+}
+
+
+# ----------------------------------------------------------------------------------------------
+#
+# Require a Pythong venv.
+#
+req_venv() {
+    [ $(echo $VIRTUAL_ENV | grep -v -e '^[[:space:]]*$' | wc -l | bc) == 0 ] && echo "This command can only be run inside a Python virtual environment (venv)." && exit $ret_req_venv
+    return 0
+}
+
+
 # ==============================================================================================
 case "$cmd" in
     
@@ -64,7 +94,7 @@ case "$cmd" in
 		git clone $url_github/$prj_name
 		;;
 	    "make-venv")
-		$0 python make-venv python3 pram $url_github/${prj_name}.git
+		$0 python make-venv python3 pram $url_github/${prj_name}.git || exit 1
 		
 		echo "Done."
 		echo ""
@@ -74,7 +104,10 @@ case "$cmd" in
 		echo ""
 		echo "To deactivate the 'pram' venv, type 'deactivate'.  For more info on venvs, type '$self_name python inf-venv'."
 		;;
-	    *) echo "$usage {$cmd_inf,clone-repo,make-env}"; exit 1;;
+	    "upd-venv")
+		req_venv
+		;;
+	    *) echo "$usage {$cmd_inf,clone-repo,make-env,upd-venv}"; exit 1;;
 	esac
 	;;
     
@@ -139,7 +172,7 @@ case "$cmd" in
 		conda create -n $4 python=$3 $5
 		;;
 	    "install-spyder")
-		[ $(echo $VIRTUAL_ENV | grep -v -e '^[[:space:]]*$' | wc -l | bc) == 0 ] && echo "This command can only be run inside a Python virtual environment (venv)." && exit 1
+		req_venv
 		
 		if conf_yn "This will install the Spyder IDE inside the currently active venv. Continue?"; then
 		    python -m pip install spyder
@@ -152,23 +185,21 @@ case "$cmd" in
 		fi
 		;;
 	    "make-venv")
-		req_argn $# 5 "$2 <python> <name> <url> [do-force? 1=yes]"
+		req_argn $# 5 "$2 <python> <name> <url>"
+		req_git_url $5
 		
-		if [ "$6" != "1" ]; then conf_yn "This will initialize a new venv called '$4', fetch source code from '$5', and (if the remote repository contains the 'requirements.txt' file) install all the dependencies.  Continue?" || exit 1; fi
+		conf_yn "This will initialize a new venv called '$4', fetch source code from '$5', and (if the remote repository contains the 'requirements.txt' file) install all the dependencies.  Continue?" || exit 1
 		
-		git ls-remote $5 2&> /dev/null
-		[ "$?" -ne 0 ] && echo "The URL does not point to a git repository or you have insufficient access rights to that repository." && exit 1
-		
-		$0 python init-venv $3 $4
+		$0 python init-venv $3 $4 || exit 1
 		
 		cd $4
 		source ./bin/activate
 		
 		git init
-                git remote add origin ${5}
+                git remote add origin $5
 		git pull origin master
 		
-		[ -f requirements.txt ] && python -m pip install -r requirements.txt
+		[ -f requirements.txt ] && conf_yn "Install dependencies?" && python -m pip install -r requirements.txt
 		;;
 	    *) echo "$usage {$cmd_inf,inf-venv,inf-venv-conda,init-macos,init-venv,init-venv-conda,install-spyder}"; exit 1;;
 	esac
