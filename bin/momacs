@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.13
+version=0.14
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -17,8 +17,10 @@ url_github=https://github.com/$github_user
 url_github_raw=https://raw.githubusercontent.com/$github_user
 
 ret_req_argn=10
-ret_req_venv=11
-ret_req_git_url=12
+ret_req_git_remote=20
+ret_req_git_repo=21
+ret_req_git_url=22
+ret_req_venv=30
 
 cmd=$1
 cmd_inf=i
@@ -49,6 +51,22 @@ conf_yn() {
 #
 req_argn() {
     [ $1 -lt $2 ] && echo "$usage $3" && exit $ret_req_argn
+    return 0
+}
+
+
+# ----------------------------------------------------------------------------------------------
+#
+# Require:
+#   a) the current working directory to be a git repository
+#   b) the specified git remote
+#
+# Args:
+#   $1 the git remote required
+#
+req_git_repo_remote() {
+    [ ! -d .git ] && echo "The current working directory is not a git repository." && exit $ret_req_git_repo
+    [ "$(git config --get remote.origin.url)" != "$1" ] && echo "The required git remote not found." && exit $ret_req_git_remote
     return 0
 }
 
@@ -90,11 +108,11 @@ case "$cmd" in
         case "$2" in
 	    "$cmd_inf") echo "PRAM (i.e., Probabilistic Relational Agent-based Modeling) routines.";;
 	    "clone-repo")
-		[ -d ./$prj ] && echo "The directory $prj already exists." && exit 1
+		[ -d ./$prj_name ] && echo "The directory $prj_name already exists." && exit 1
 		git clone $url_github/$prj_name
 		;;
 	    "make-venv")
-		$0 python make-venv python3 pram $url_github/${prj_name}.git || exit 1
+		$0 python make-venv python3 $prj_name $url_github/${prj_name}.git || exit 1
 		
 		echo "Done."
 		echo ""
@@ -104,10 +122,11 @@ case "$cmd" in
 		echo ""
 		echo "To deactivate the 'pram' venv, type 'deactivate'.  For more info on venvs, type '$self_name python inf-venv'."
 		;;
-	    "upd-venv")
-		req_venv
+	    "update-venv")
+		req_git_repo_remote $url_github/${prj_name}.git
+		git pull origin master
 		;;
-	    *) echo "$usage {$cmd_inf,clone-repo,make-env,upd-venv}"; exit 1;;
+	    *) echo "$usage {$cmd_inf,clone-repo,make-env,update-venv}"; exit 1;;
 	esac
 	;;
     
@@ -231,7 +250,8 @@ case "$cmd" in
 		    echo "No update necessary."
                 fi
 		;;
-            *) echo "$usage {$cmd_inf,edit,update}"; exit 1;;
+	    "version") echo "$version";;
+            *) echo "$usage {$cmd_inf,edit,update,version}"; exit 1;;
 	esac
         ;;
     
