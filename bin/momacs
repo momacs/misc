@@ -106,7 +106,7 @@ case "$cmd" in
 	prj_name=pram
 	
         case "$2" in
-	    "$cmd_inf") echo "PRAM (i.e., Probabilistic Relational Agent-based Modeling) routines.";;
+	    "$cmd_inf") echo "Probabilistic Relational Agent-based Modeling routines (more info at: https://github.com/momacs/pram).";;
 	    "clone-repo")
 		[ -d ./$prj_name ] && echo "The directory $prj_name already exists." && exit 1
 		git clone $url_github/$prj_name
