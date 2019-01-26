@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.11
+version=0.12
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -19,17 +19,6 @@ url_github_raw=https://raw.githubusercontent.com/$github_user
 cmd=$1
 cmd_inf=i
 usage="Usage: $self_name $cmd"
-
-
-# ----------------------------------------------------------------------------------------------
-#
-# Args:
-#   $1 prompt text
-#
-conf_y() {
-    read -p "$1 [y] " res
-    [ "$res" == "y" -o "$res" == "Y" ] && return 0 || return 1
-}
 
 
 # ----------------------------------------------------------------------------------------------
