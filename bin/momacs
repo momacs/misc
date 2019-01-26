@@ -204,7 +204,7 @@ case "$cmd" in
                 if [ "$is_update_warranted" -eq "1" ]; then
 		    mv ./$self_name ./$self_name-old-v$version
                     mv ./$self_name_tmp ./$self_name
-		    chown a+x ./$self_name
+		    chown a+x $0
 		    echo "Update successful (from version $version to $version_new; old version retained)."
 		else
                     rm ./$self_name_tmp
