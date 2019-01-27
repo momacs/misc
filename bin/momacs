@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.14
+version=0.15
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -151,6 +151,13 @@ case "$cmd" in
 		echo "To LIST all venvs, type 'conda env list'"
 		echo "To DELETE a venv, type 'conda remove -n <venv-name> --all'."
 		;;
+	    "init-freebsd")
+		echo "Not implemented yet." && exit 0
+		
+		conf_yn "This will install Python 3. Continue?" || exit 1
+		
+		sudo pkg install -y python36 py36-pip
+		;;
 	    "init-macos")
 		conf_yn "This will install the HomeBrew package manager (or update it, if already present) and use it to install Python 3. Continue?" || exit 1
 		
@@ -167,6 +174,37 @@ case "$cmd" in
 		echo "Done."
 		echo ""
 		echo "You can check the version of Python 3 by typing 'python3 --version'.  All python symlinks live in /usr/local/bin/.  As a reminder, you should refrain from using your global python directly and instead develop software in virtual environments (i.e., venvs) as it promotes good isolation of python projects.  For example, installing packages in the global interpreter space should be avoided; all dependencies should be satisfied inside a dedicated venv.  To initializa a new venv, type '$self_name $2 init-venv'.  More information on venv can be found in the official Python docs (https://docs.python.org/3.6/library/venv.html)."
+		;;
+	    "init-ubuntu")
+		echo "Not implemented yet. Instead, use: $self_name $cmd init-ubuntu-opt"
+		
+		#conf_yn "This will install Python 3. Continue?" || exit 1
+		#
+		#sudo apt-get update
+		#sudo apt-get -y upgrade
+		#sudo apt-get -y autoremove
+		#sudo apt-get clean
+	        #
+		#sudo apt-get install -y build-essential libssl-dev libffi-dev python-dev
+		#sudo apt-get install -y python3 python3-pip python3-venv
+		#;;
+	    "init-ubuntu-opt")
+		conf_yn "This will download and compile Python 3.6.3 with optimizations enabled. Continue?" || exit 1
+		
+                mkdir -p ~/dev/py
+                cd ~/dev/py
+		wget https://www.python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz
+		tar -xvf Python-3.6.3.tar.xz
+                rm Python-3.6.3.tar.xz
+
+		ncores=$(cat /proc/cpuinfo | grep processor | wc -l)
+                cd Python-3.6.3
+                ./configure --enable-optimizations
+		sudo make -j$ncores
+                sudo make install
+                # sudo make altinstall  # preserve the current python
+		
+                sudo apt-get install python3-venv
 		;;
             "init-venv")
 		req_argn $# 4 "$2 <python> <name> [do-force? 1=yes]"
@@ -186,14 +224,14 @@ case "$cmd" in
 	    "init-venv-conda")
 		req_argn $# 4 "$2 <python-version> <name> \"pkg-1 pkg-2 ...\""
 		
-		[ $(which conda | wc -l | bc) == 0 ] && echo "Conda not found; please install it first." && exit 1
+		[ $(which conda | wc -l | bc) == 0 ] && echo "Conda not found." && exit 1
 		
 		conda create -n $4 python=$3 $5
 		;;
 	    "install-spyder")
 		req_venv
 		
-		if conf_yn "This will install the Spyder IDE inside the currently active venv. Continue?"; then
+		if conf_yn "This will install the Spyder IDE inside the '$VIRTUAL_ENV' venv. Continue?"; then
 		    python -m pip install spyder
 		    echo "python ./lib/python3.6/site-packages/spyder/app/start.py" >> spyder-start.sh
 		    chmod a+x spyder-start.sh
@@ -220,7 +258,7 @@ case "$cmd" in
 		
 		[ -f requirements.txt ] && conf_yn "Install dependencies?" && python -m pip install -r requirements.txt
 		;;
-	    *) echo "$usage {$cmd_inf,inf-venv,inf-venv-conda,init-macos,init-venv,init-venv-conda,install-spyder}"; exit 1;;
+	    *) echo "$usage {$cmd_inf,inf-venv,inf-venv-conda,init-freebsd,init-macos,init-ubuntu,init-ubuntu-opt,init-venv,init-venv-conda,install-spyder}"; exit 1;;
 	esac
 	;;
     
