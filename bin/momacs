@@ -87,7 +87,7 @@ req_git_url() {
 
 # ----------------------------------------------------------------------------------------------
 #
-# Require a Pythong venv.
+# Require a Python venv.
 #
 req_venv() {
     [ $(echo $VIRTUAL_ENV | grep -v -e '^[[:space:]]*$' | wc -l | bc) == 0 ] && echo "This command can only be run inside a Python virtual environment (venv)." && exit $ret_req_venv
