@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.15
+version=0.16
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -97,6 +97,36 @@ req_venv() {
 
 # ==============================================================================================
 case "$cmd" in
+
+    "latex")
+	case "$2" in
+	    "$cmd_inf") echo "LaTeX document preparation system routines.";;
+	    "install-minted")
+		conf_yn "This will install the 'minted' highlighted source code package. Continue?" || exit 1
+		
+		pip install Pygments
+		
+		sudo tlmgr update -self
+		sudo tlmgr install minted fvextra
+		
+		echo "You need to add '--shell-escape' command-line argument to pdftex and pdflatex in your editor or minted won't work.  Below is a minimal complete example."
+		echo ""
+		echo "\documentclass{article}"
+		echo "\usepackage{minted}"
+		echo "\begin{document}"
+		echo "\begin{minted}{python}"
+		echo "import numpy as np"
+		echo "print('hi')"
+		echo "\end{minted}"
+		echo "\end{document}"
+		echo ""
+		echo "More information available at:"
+		echo "    https://github.com/gpoore/minted"
+		echo "    https://github.com/gpoore/minted/blob/master/source/minted.pdf"
+		;;
+	    *) echo "$usage {$cmd_inf,install-minted}"; exit 1;;
+	esac
+    ;;
     
     # ------------------------------------------------------------------------------------------
     "ping") echo "pong";;
@@ -298,6 +328,6 @@ case "$cmd" in
         ;;
     
     # ------------------------------------------------------------------------------------------
-    *) echo "Commands: ping pram python self"; exit 1;;
+    *) echo "Commands: latex ping pram python self"; exit 1;;
     
 esac
