@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.16
+version=0.17
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -109,7 +109,8 @@ case "$cmd" in
 		sudo tlmgr update -self
 		sudo tlmgr install minted fvextra
 		
-		echo "You need to add '--shell-escape' command-line argument to pdftex and pdflatex in your editor or minted won't work.  Below is a minimal complete example."
+		echo ""
+		echo "Add '--shell-escape' command-line argument to pdftex and pdflatex in your editor for minted to work.  Below is a minimal complete example."
 		echo ""
 		echo "\documentclass{article}"
 		echo "\usepackage{minted}"
