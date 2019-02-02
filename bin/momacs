@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.22
+version=0.23
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -456,7 +456,7 @@ case "$cmd" in
 	    "venv")
 		case "$3" in
 		    "_git-prereq")
-			is_prog git && return 0
+			is_prog git && exit 0
 			
 			case "$(uname)" in
 			    "Darwin") ;;
