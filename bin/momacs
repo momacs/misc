@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.26
+version=0.27
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -464,8 +464,6 @@ case "$cmd" in
 			req_argn $# 6 "$2 $3 <python> <name> <url>"
 			req_git_url $6
 			req_y "This will initialize a new venv '$5', fetch source code from '$6', and install dependencies. Continue?"
-			
-			$0 $cmd $2 _make-prereq || exit 1
 			
 			$0 python venv init $4 $5 || exit 1
 			
