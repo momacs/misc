@@ -24,13 +24,13 @@ curl -s -o momacs https://raw.githubusercontent.com/momacs/misc/master/bin/momac
 chmod u+x momacs
 ```
 
-To add the `~/bin` to the PATH on MacOS and Ubuntu, do:
+To add the `~/bin` to the PATH (and to have that change reflected in the current terminal session) on MacOS and Ubuntu, do:
 ```
 echo 'export PATH=$PATH:~/bin' >> ~/.bash_profile
 source ~/.bash_profile
 ```
 
-If you use a shell different than `bash`, you'll likely know how to modify the PATH.  To check what shell you are running, run:
+If you use a shell different than `bash`, you'll likely know how to modify the PATH.  To check what shell you are running, do:
 ```
 echo $SHELL
 ```
@@ -45,4 +45,9 @@ momacs
 To check if a more up-to-date version is available in this repository, and to automatically download it, do:
 ```
 momacs self update
+```
+
+All previous version will be retain, but they can be removed like so:
+```
+momacs self remove-old-versions
 ```
