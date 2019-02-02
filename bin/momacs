@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.25
+version=0.26
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -237,15 +237,6 @@ case "$cmd" in
 		;;
 	    "venv")
 		case "$3" in
-		    "info")
-			echo "Every time you want to do work in a particular venv, that venv needs to be activated.  This ensures that all operations like installing packages happen inside of that venv and not in the global interpreter environment."
-			echo ""
-			echo "To ACTIVATE a venv, type: 'source activate <venv-name>'."
-			echo "To CONFIRM you are using the venv's interpreter, type 'which python' and check the path."
-			echo "To EXIT a venv, type 'source deactivate' (or end the terminal session)."
-			echo "To LIST all venvs, type 'conda env list'"
-			echo "To DELETE a venv, type 'conda remove -n <venv-name> --all'."
-			;;
 		    "git")
 			req_argn $# 5 "$2 $3 <name> <url>"
 			req_git_url $5
@@ -262,13 +253,22 @@ case "$cmd" in
 			
 			[ -f requirements.txt ] && conf_yn "Install dependencies?" && python -m pip install -r requirements.txt
 			;;
+		    "info")
+			echo "Every time you want to do work in a particular venv, that venv needs to be activated.  This ensures that all operations like installing packages happen inside of that venv and not in the global interpreter environment."
+			echo ""
+			echo "To ACTIVATE a venv, type: 'source activate <venv-name>'."
+			echo "To CONFIRM you are using the venv's interpreter, type 'which python' and check the path."
+			echo "To EXIT a venv, type 'source deactivate' (or end the terminal session)."
+			echo "To LIST all venvs, type 'conda env list'"
+			echo "To DELETE a venv, type 'conda remove -n <venv-name> --all'."
+			;;
 		    "init")
 			req_argn $# 4 "$2 $3 <name> \"pkg pkg ...\""
 			req_prog conda
 			
 			conda create -n $4 $5
 			;;
-		    *) echo "$usage $2 {info,git,init}" && exit 1;;
+		    *) echo "$usage $2 {git,info,init}" && exit 1;;
 		esac
 		;;
 	    *) echo "$usage {$cmd_inf,install,install-mini,venv}" && exit 1;;
@@ -315,14 +315,14 @@ case "$cmd" in
         case "$2" in
 	    "$cmd_inf") echo "Probabilistic Relational Agent-based Modeling routines (more info at: https://github.com/momacs/pram).";;
 	    "clone-repo")
-		[ -d ./$cmd ] && echo "The directory $prj_name already exists." && exit 1
+		[ -d ./$cmd ] && echo "The directory $cmd already exists." && exit 1
 		git clone $url_github/$cmd
 		;;
 	    "venv")
 		case "$3" in
 		    "make")
 			$0 python venv _git-prereq || exit 1
-			$0 python venv git python3.6 $prj_name $url_github/${cmd}.git || exit 1
+			$0 python venv git python3.6 $cmd $url_github/${cmd}.git || exit 1
 			
 			echo "Done."
 			echo ""
@@ -346,7 +346,7 @@ case "$cmd" in
 			echo "To deactivate the '$cmd' venv, type 'source deactivate'.  For more info on conda venvs, type '$self_name conda venv info'."
 			;;
 		    "update" | "update-conda")
-			req_git_repo_remote $url_github/${prj_name}.git
+			req_git_repo_remote $url_github/${cmd}.git
 			req_y "This will download the most recent version of PRAM from GitHub.  It will overwrite any changes you've made to the 'src' directory. Continue?"
 			
 			git pull origin master
@@ -370,13 +370,9 @@ case "$cmd" in
 		    *) echo "Unsupported operating system." && exit 1;;
 		esac
 		
-		echo "Done."
-		echo ""
-		echo "You can check the version of Python 3 by typing 'python3 --version'.  All python symlinks live in /usr/local/bin/.  As a reminder, you should refrain from using your global python directly and instead develop software in virtual environments (i.e., venvs) as it promotes good isolation of python projects.  For example, installing packages in the global interpreter space should be avoided; all dependencies should be satisfied inside a dedicated venv.  To initializa a new venv, type '$self_name $2 init-venv'.  More information on venv can be found in the official Python docs (https://docs.python.org/3.6/library/venv.html)."
+		echo "Done. All python symlinks are located in /usr/local/bin/."
 		;;
 	    "_install-freebsd")
-		echo "Not implemented yet." && exit 0
-		
 		req_os "FreeBSD"
 		req_y "This will install Python 3. Continue?"
 		
@@ -464,14 +460,6 @@ case "$cmd" in
 			    "Linux")   sudo apt install -y git;;
 			esac
 			;;
-		    "info")
-			echo "Every time you want to do work in a particular venv, that venv needs to be activated.  This ensures that all operations like installing packages happen inside of that venv and not in the global interpreter environment."
-			echo ""
-			echo "To ACTIVATE a venv, enter its directory and type: 'source ./bin/activate'."
-			echo "To CONFIRM you are using the venv's interpreter, type 'which python' and check the path."
-			echo "To EXIT a venv, type 'deactivate' (or end the terminal session)."
-			echo "To DELETE a venv, delete its directory (i.e., 'rm -r <dir-name>')."
-			;;
 		    "git")
 			req_argn $# 6 "$2 $3 <python> <name> <url>"
 			req_git_url $6
@@ -490,6 +478,14 @@ case "$cmd" in
 			
 			[ -f requirements.txt ] && conf_yn "Install dependencies?" && python -m pip install -r requirements.txt
 			;;
+		    "info")
+			echo "Every time you want to do work in a particular venv, that venv needs to be activated.  This ensures that all operations like installing packages happen inside of that venv and not in the global interpreter environment."
+			echo ""
+			echo "To ACTIVATE a venv, enter its directory and type: 'source ./bin/activate'."
+			echo "To CONFIRM you are using the venv's interpreter, type 'which python' and check the path."
+			echo "To EXIT a venv, type 'deactivate' (or end the terminal session)."
+			echo "To DELETE a venv, delete its directory (i.e., 'rm -r <dir-name>')."
+			;;
 		    "init")
 			req_argn $# 5 "$2 $3 <python> <name> [do-force? 1=yes]"
 			
@@ -505,7 +501,7 @@ case "$cmd" in
 			
 			$4 -m venv $5
 			;;
-		    *) echo "$usage $2 {info,git,init}" && exit 1;;
+		    *) echo "$usage $2 {git,info,init}" && exit 1;;
 		esac
 		;;
 	    *) echo "$usage {$cmd_inf,install,install-spyder,venv}" && exit 1;;
