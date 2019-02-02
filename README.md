@@ -24,15 +24,10 @@ curl -s -o momacs https://raw.githubusercontent.com/momacs/misc/master/bin/momac
 chmod u+x momacs
 ```
 
-To add the `~/bin` to the PATH (and to have that change reflected in the current terminal session) on MacOS and Ubuntu, do:
+To add the `~/bin` to the PATH (and to have that change reflected in the current terminal session), run:
 ```
-echo 'export PATH=$PATH:~/bin' >> ~/.bash_profile
-source ~/.bash_profile
-```
-
-If you use a shell different than `bash`, you'll likely know how to modify the PATH.  To check what shell you are running, do:
-```
-echo $SHELL
+echo 'export PATH=$PATH:~/bin' >> ~/.bashrc
+source ~/.bashrc
 ```
 
 ### 1.2. Using
