@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.27
+version=0.28
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -327,7 +327,8 @@ case "$cmd" in
 			echo "Done."
 			echo ""
 			echo "The latest version of PRAM is located in '$cmd' directory.  To run it, type:"
-			echo "cd $cmd && source ./bin/activate && cd src"
+			echo "source ./$cmd/bin/activate"
+			echo "cd ./$cmd/src"
 			echo "python sim.py"
 			echo ""
 			echo "To deactivate the '$cmd' venv, type 'deactivate'.  For more info on Python venvs, type '$self_name python venv info'."
@@ -338,9 +339,9 @@ case "$cmd" in
 			
 			echo "Done."
 			echo ""
-			echo "The latest version of PRAM is located in '/envs/$cmd' directory.  To run it, type:"
+			echo "The latest version of PRAM is located in '$cmd' directory.  To run it, type:"
 			echo "source activate $cmd"
-			echo "cd /envs/$cmd/src"
+			echo "cd ./$cmd/src"
 			echo "python sim.py"
 			echo ""
 			echo "To deactivate the '$cmd' venv, type 'source deactivate'.  For more info on conda venvs, type '$self_name conda venv info'."
@@ -487,7 +488,7 @@ case "$cmd" in
 		    "init")
 			req_argn $# 5 "$2 $3 <python> <name> [do-force? 1=yes]"
 			
-			[[ -d $5 ]] && { echo "Directory '$4' already exists."; exit 1; }
+			[[ -d $5 ]] && { echo "Directory '$5' already exists."; exit 1; }
 			
 			ver=$($4 -c 'import platform; print(platform.python_version())' 2> /dev/null | tr -d ' ')
 			if [[ "$4" != *"python"* ]] || [[ "$ver" == "" ]]; then
