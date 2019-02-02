@@ -47,7 +47,7 @@ To check if a more up-to-date version is available in this repository, and to au
 momacs self update
 ```
 
-The current local version will be retained on update, but all old versions can easily be removed:
+If update is warranted, the current local version will be retained to enable rollback.  All retained previous versions can be removed like so:
 ```
 momacs self remove-old-versions
 ```
