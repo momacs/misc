@@ -1,9 +1,23 @@
 # Miscellaneous
 
-## `momacs` command-line utility
-The [`momacs`](bin/momacs) utility alleviates the pain of performing common and often long, repetitive, and error-prone tasks (e.g., downloading the latest versions of [PRAM](https://github.com/momacs/pram)).
+## 1. `momacs` command-line utility
+The [`momacs`](bin/momacs) utility alleviates the pain of performing common and often long, repetitive, and error-prone tasks (e.g., downloading the latest versions of [PRAM](https://github.com/momacs/pram)).  Currently supported operating systems are: FreeBSD, MacOS, and Ubuntu.
 
-### Installing
+### 1.1. Installing
+#### Prerequisites
+First, make sure you have `curl` and `git` installed on your system.  You're set on MacOS.  On FreeBSD, do:
+```
+sudo pkg install -y curl git
+```
+
+On Ubuntu, do:
+```
+sudo apt install -y curl git
+```
+
+Fo course, you could use `wget` as well.
+
+#### Install
 To download the utility and make it executable, run the following commands:
 ```
 mkdir -p ~/bin
@@ -12,18 +26,24 @@ curl -s -o momacs https://raw.githubusercontent.com/momacs/misc/master/bin/momac
 chmod u+x momacs
 ```
 
-Make sure `~/bin` is in your $PATH (`echo $PATH`).  If it is not there and if you are using the `bash` shell (default on MacOS and Ubuntu), do:
+To add the `~/bin` to the PATH on MacOS and Ubuntu, do:
 ```
-echo 'export PATH=$PATH:~/bin' >> ~/.bashrc
+echo 'export PATH=$PATH:~/bin' >> ~/.bash_profile
+source ~/.bash_profile
 ```
 
-### Using
+If you use a shell different than `bash`, you'll likely know how to modify the PATH.  To check what shell you are running, run:
+```
+echo $SHELL
+```
+
+### 1.2. Using
 To see the list of available commands, simply invoke it:
 ```
 momacs
 ```
 
-### Updating
+### 1.3. Updating
 To check if a more up-to-date version is available in this repository, and to automatically download it, do:
 ```
 momacs self update

@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.17
+version=0.18
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -16,14 +16,18 @@ github_email=momacs@pitt.edu
 url_github=https://github.com/$github_user
 url_github_raw=https://raw.githubusercontent.com/$github_user
 
-ret_req_argn=10
+ret_req_os=10
 ret_req_git_remote=20
 ret_req_git_repo=21
 ret_req_git_url=22
 ret_req_venv=30
+ret_req_argn=40
+ret_req_y=50
+ret_req_prog=50
 
 cmd=$1
 cmd_inf=i
+
 usage="Usage: $self_name $cmd"
 
 
@@ -37,6 +41,24 @@ usage="Usage: $self_name $cmd"
 conf_yn() {
     read -p "$1 [y/n] " res
     [ "$res" == "y" -o "$res" == "Y" ] && return 0 || return 1
+}
+
+
+# ----------------------------------------------------------------------------------------------
+#
+# Is the architecture 64-bit?
+#
+is_arch_64b() {
+    return $(uname -m | grep 64 | wc -l | bc)
+}
+
+
+# ----------------------------------------------------------------------------------------------
+#
+# Is program $1 installed?
+#
+is_prog() {
+    [ "$(which $1 | wc -l | bc)" -eq 1 ] && return 0 || return 1
 }
 
 
@@ -87,10 +109,53 @@ req_git_url() {
 
 # ----------------------------------------------------------------------------------------------
 #
-# Require a Python venv.
+# Requires the OS to be $1
+#
+req_os() {
+    [ "$(uname)" != "$1" ] && echo "Wrong operating system." && exit $ret_req_os
+    return 0
+}
+
+req_os_ubuntu() {
+    req_os "Linux"
+    [ "$(uname -a | grep Ubuntu | wc -l | bc)" -ne 1 ] && echo "Unsupported version of Linux." && exit $ret_req_os
+    return 0
+}
+
+
+# ----------------------------------------------------------------------------------------------
+#
+# Requires program $1 installed
+#
+req_prog() {
+    [ is_prog $1 ] && echo "Required program '$1' missing." && exit $ret_req_prog
+    return 0
+}
+
+
+# ----------------------------------------------------------------------------------------------
+#
+# Requires any Python venv.
 #
 req_venv() {
-    [ $(echo $VIRTUAL_ENV | grep -v -e '^[[:space:]]*$' | wc -l | bc) == 0 ] && echo "This command can only be run inside a Python virtual environment (venv)." && exit $ret_req_venv
+    [ $(echo $VIRTUAL_ENV | grep -v -e '^[[:space:]]*$' | wc -l | bc) == 0 ] && echo "This command can only be run inside an active Python virtual environment (venv)." && exit $ret_req_venv
+    return 0
+}
+
+
+# ----------------------------------------------------------------------------------------------
+#
+# Requires a 'y' or 'Y' response.
+#
+# Args:
+#   $1 prompt text
+#   $2 message if not 'y' or 'Y' [optional]
+#
+req_y() {
+    if ! conf_yn "$1"; then
+        [ "$2" != "" ] && echo "$2"
+        exit $ret_req_y
+    fi
     return 0
 }
 
@@ -98,11 +163,85 @@ req_venv() {
 # ==============================================================================================
 case "$cmd" in
 
+    # ------------------------------------------------------------------------------------------
+    "conda")
+        case "$2" in
+            "$cmd_inf") echo "Anaconda and Miniconda routines.";;
+	    "install")
+		case "$(uname)" in
+		    "Darwin")  $0 $cmd _install-macos   || exit 1;;
+		    "FreeBSD") $0 $cmd _install-freebsd || exit 1;;
+		    "Linux")   $0 $cmd _install-ubuntu  || exit 1;;
+		    *) echo "Unsupported operating system." && exit 1;;
+		esac
+		;;
+	    "_install-freebsd")
+		req_os "FreeBSD"
+		;;
+	    "_install-macos")
+		req_os "Darwin"
+		
+		file=Miniconda3-latest-MacOSX-x86_64.sh
+		curl -s -o $file https://repo.anaconda.com/miniconda/$file
+		bash $file
+		;;
+	    "_install-linux")
+		req_os_ubuntu
+		
+		if [ is_64b_arch ]
+		then file=Miniconda3-latest-Linux-x86_64.sh
+		else file=Miniconda3-latest-Linux-x86.sh
+		fi
+		
+		wget https://repo.anaconda.com/miniconda/$file
+		bash $file
+		;;
+	    "venv")
+		case "$3" in
+		    "info")
+			echo "Every time you want to do work in a particular venv, that venv needs to be activated.  This ensures that all operations like installing packages happen inside of that venv and not in the global interpreter environment."
+			echo ""
+			echo "To ACTIVATE a venv, type: 'source activate <venv-name>'."
+			echo "To CONFIRM you are using the venv's interpreter, type 'which python' and check the path."
+			echo "To EXIT a venv, type 'source deactivate' (or end the terminal session)."
+			echo "To LIST all venvs, type 'conda env list'"
+			echo "To DELETE a venv, type 'conda remove -n <venv-name> --all'."
+			;;
+		    "init")
+			req_argn $# 5 "$2 $3 <name> \"pkg pkg ...\""
+			req_prog conda
+			
+			conda create -n $4 $5
+			;;
+		    "make")
+			req_argn $# 5 "$2 $3 <name> <url>"
+			req_git_url $5
+			req_y "This will initialize a new venv '$4', fetch source code from '$5', and install dependencies. Continue?"
+			
+			$0 conda venv init $4 || exit 1
+			
+			/envs/$4
+			conda activate $4
+			
+			git init
+			git remote add origin $5
+			git pull origin master
+			
+			[ -f requirements.txt ] && conf_yn "Install dependencies?" && python -m pip install -r requirements.txt
+			;;
+		    *) echo "$usage $2 {info,init,make}" && exit 1;;
+		esac
+		;;
+	    *) echo "$usage {$cmd_inf,install,install-spyder,venv}" && exit 1;;
+	esac
+	;;
+    
+    # ------------------------------------------------------------------------------------------
     "latex")
 	case "$2" in
 	    "$cmd_inf") echo "LaTeX document preparation system routines.";;
 	    "install-minted")
-		conf_yn "This will install the 'minted' highlighted source code package. Continue?" || exit 1
+		req_y "This will install the 'minted' highlighted source code package. Continue?"
 		
 		pip install Pygments
 		
@@ -110,7 +249,7 @@ case "$cmd" in
 		sudo tlmgr install minted fvextra
 		
 		echo ""
-		echo "Add '--shell-escape' command-line argument to pdftex and pdflatex in your editor for minted to work.  Below is a minimal complete example."
+		echo "Add '--shell-escape' command-line argument to pdftex and pdflatex in your editor for minted to work. Below is a minimal working example."
 		echo ""
 		echo "\documentclass{article}"
 		echo "\usepackage{minted}"
@@ -125,7 +264,7 @@ case "$cmd" in
 		echo "    https://github.com/gpoore/minted"
 		echo "    https://github.com/gpoore/minted/blob/master/source/minted.pdf"
 		;;
-	    *) echo "$usage {$cmd_inf,install-minted}"; exit 1;;
+	    *) echo "$usage {$cmd_inf,install-minted}" && exit 1;;
 	esac
     ;;
     
@@ -134,30 +273,60 @@ case "$cmd" in
     
     # ------------------------------------------------------------------------------------------
     "pram")
-	prj_name=pram
-	
         case "$2" in
 	    "$cmd_inf") echo "Probabilistic Relational Agent-based Modeling routines (more info at: https://github.com/momacs/pram).";;
 	    "clone-repo")
-		[ -d ./$prj_name ] && echo "The directory $prj_name already exists." && exit 1
-		git clone $url_github/$prj_name
+		[ -d ./$cmd ] && echo "The directory $prj_name already exists." && exit 1
+		git clone $url_github/$cmd
 		;;
-	    "make-venv")
-		$0 python make-venv python3 $prj_name $url_github/${prj_name}.git || exit 1
-		
-		echo "Done."
-		echo ""
-		echo "The latest version of PRAM is located in '$prj_name' directory.  To run it, type:"
-		echo "cd $prj_name && source ./bin/activate && cd src"
-		echo "python sim.py"
-		echo ""
-		echo "To deactivate the 'pram' venv, type 'deactivate'.  For more info on venvs, type '$self_name python inf-venv'."
+	    "venv")
+		case "$3" in
+		    "make")
+			$0 $cmd $3 _make-prereq || exit 1
+			
+			$0 python venv make python3.6 $prj_name $url_github/${cmd}.git || exit 1
+			
+			echo "Done."
+			echo ""
+			echo "The latest version of PRAM is located in '$cmd' directory.  To run it, type:"
+			echo "cd $cmd && source ./bin/activate && cd src"
+			echo "python sim.py"
+			echo ""
+			echo "To deactivate the '$cmd' venv, type 'deactivate'.  For more info on Python venvs, type '$self_name python venv info'."
+			;;
+		    "make-conda")
+			$0 $cmd $3 _make-prereq || exit 1
+			
+			$0 conda venv make $cmd $url_github/${cmd}.git || exit 1
+			
+			echo "Done."
+			echo ""
+			echo "The latest version of PRAM is located in '/envs/$cmd' directory.  To run it, type:"
+			echo "source activate $cmd"
+			echo "cd /envs/$cmd/src"
+			echo "python sim.py"
+			echo ""
+			echo "To deactivate the '$cmd' venv, type 'source deactivate'.  For more info on conda venvs, type '$self_name conda venv info'."
+			;;
+		    "_make-prereq")
+			is_prog git && return 0
+			
+			case "$(uname)" in
+			    "Darwin") ;;
+			    "FreeBSD") sudo pkg install -y git;;
+			    "Linux")   sudo apt install -y git;;
+			esac
+			;;
+		    "update" | "update-conda")
+			req_git_repo_remote $url_github/${prj_name}.git
+			req_y "This will download the most recent version of PRAM from GitHub.  It will overwrite any changes you've made to the 'src' directory. Continue?"
+			
+			git pull origin master
+			;;
+		    *) echo "$usage $2 {make,make-conda,update,update-conda}" && exit 1;;
+		esac
 		;;
-	    "update-venv")
-		req_git_repo_remote $url_github/${prj_name}.git
-		git pull origin master
-		;;
-	    *) echo "$usage {$cmd_inf,clone-repo,make-env,update-venv}"; exit 1;;
+	    *) echo "$usage {$cmd_inf,clone-repo,venv}" && exit 1;;
 	esac
 	;;
     
@@ -165,34 +334,39 @@ case "$cmd" in
     "python")
         case "$2" in
 	    "$cmd_inf") echo "Python routines.";;
-	    "inf-venv")
-		echo "Every time you want to do work in a particular venv, that venv needs to be activated.  This ensures that all operations like installing packages happen inside of that venv and not in the global interpreter environment."
+	    "install")
+		case "$(uname)" in
+		    "Darwin")  $0 $cmd _install-macos   || exit 1;;
+		    "FreeBSD") $0 $cmd _install-freebsd || exit 1;;
+		    "Linux")   $0 $cmd _install-ubuntu  || exit 1;;
+		    *) echo "Unsupported operating system." && exit 1;;
+		esac
+		
+		echo "Done."
 		echo ""
-		echo "To ACTIVATE a venv, enter its directory and type: 'source ./bin/activate'."
-		echo "To CONFIRM you are using the venv's interpreter, type 'which python' and check the path."
-		echo "To EXIT a venv, type 'deactivate' (or end the terminal session)."
-		echo "To DELETE a venv, delete its directory (i.e., 'rm -r <dir-name>')."
+		echo "You can check the version of Python 3 by typing 'python3 --version'.  All python symlinks live in /usr/local/bin/.  As a reminder, you should refrain from using your global python directly and instead develop software in virtual environments (i.e., venvs) as it promotes good isolation of python projects.  For example, installing packages in the global interpreter space should be avoided; all dependencies should be satisfied inside a dedicated venv.  To initializa a new venv, type '$self_name $2 init-venv'.  More information on venv can be found in the official Python docs (https://docs.python.org/3.6/library/venv.html)."
 		;;
-	    "inf-venv-conda")
-		echo "Every time you want to do work in a particular venv, that venv needs to be activated.  This ensures that all operations like installing packages happen inside of that venv and not in the global interpreter environment."
-		echo ""
-		echo "To ACTIVATE a venv, type: 'source activate <venv-name>'."
-		echo "To CONFIRM you are using the venv's interpreter, type 'which python' and check the path."
-		echo "To EXIT a venv, type 'source deactivate' (or end the terminal session)."
-		echo "To LIST all venvs, type 'conda env list'"
-		echo "To DELETE a venv, type 'conda remove -n <venv-name> --all'."
-		;;
-	    "init-freebsd")
+	    "_install-freebsd")
 		echo "Not implemented yet." && exit 0
 		
-		conf_yn "This will install Python 3. Continue?" || exit 1
+		req_os "FreeBSD"
+		req_y "This will install Python 3. Continue?"
+		
+		if conf_yn "Update the system before?"; then
+		    sudo pkg update
+		    sudo pkg upgrade
+		    sudo pkg autoremove
+		    sudo pkg clean
+		fi
 		
 		sudo pkg install -y python36 py36-pip
+		sudo python3.6 -m pip install --upgrade pip
 		;;
-	    "init-macos")
-		conf_yn "This will install the HomeBrew package manager (or update it, if already present) and use it to install Python 3. Continue?" || exit 1
+	    "_install-macos")
+		req_os "Darwin"
+		req_y "This will install the HomeBrew package manager (or update it, if already present) and use it to install Python 3. Continue?"
 		
-		if [ $(which brew | wc -l | bc) == 0 ]; then
+		if ! is_prog brew; then
 		    echo "HomeBrew not found, installing..."
 		    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 		else
@@ -201,35 +375,37 @@ case "$cmd" in
 		fi
 		
 		brew install python3
-		
-		echo "Done."
-		echo ""
-		echo "You can check the version of Python 3 by typing 'python3 --version'.  All python symlinks live in /usr/local/bin/.  As a reminder, you should refrain from using your global python directly and instead develop software in virtual environments (i.e., venvs) as it promotes good isolation of python projects.  For example, installing packages in the global interpreter space should be avoided; all dependencies should be satisfied inside a dedicated venv.  To initializa a new venv, type '$self_name $2 init-venv'.  More information on venv can be found in the official Python docs (https://docs.python.org/3.6/library/venv.html)."
 		;;
-	    "init-ubuntu")
+	    "_install-ubuntu")
 		echo "Not implemented yet. Instead, use: $self_name $cmd init-ubuntu-opt" && exit 0
 		
-		conf_yn "This will install Python 3. Continue?" || exit 1
+		req_os_ubuntu
+		req_y "This will install Python 3. Continue?"
 		
-		sudo apt-get update
-		sudo apt-get -y upgrade
-		sudo apt-get -y autoremove
-		sudo apt-get clean
-	        
-		sudo apt-get install -y build-essential libssl-dev libffi-dev python-dev
-		sudo apt-get install -y python3 python3-pip python3-venv
+		if conf_yn "Update the system before?"; then
+		    sudo apt update
+		    sudo apt upgrade
+		    sudo apt autoremove
+		    sudo apt clean
+	        fi
+		
+		sudo apt install -y build-essential libssl-dev libffi-dev python-dev
+		sudo apt install -y python3 python3-pip python3-venv
+		
+		sudo python3 -m pip install --upgrade pip
 		;;
-	    "init-ubuntu-opt")
-		echo "Not implemented yet. Instead, use: $self_name $cmd init-ubuntu-opt" && exit 0
+	    "_install-ubuntu-opt")
+		echo "Not implemented yet. Instead, use: $self_name $cmd install-py3-ubuntu" && exit 0
 		
-		conf_yn "This will download and compile Python 3.6.3 with optimizations enabled. Continue?" || exit 1
+		req_os_ubuntu
+		req_y "This will download and compile Python 3.6.3 with optimizations enabled. Continue?"
 		
                 mkdir -p ~/dev/py
                 cd ~/dev/py
 		wget https://www.python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz
 		tar -xvf Python-3.6.3.tar.xz
                 rm Python-3.6.3.tar.xz
-
+		
 		ncores=$(cat /proc/cpuinfo | grep processor | wc -l)
                 cd Python-3.6.3
                 ./configure --enable-optimizations
@@ -241,67 +417,75 @@ case "$cmd" in
 		curl https://bootstrap.pypa.io/get-pip.py | sudo -H python3.6
                 #sudo apt-get install python3-venv
 		;;
-            "init-venv")
-		req_argn $# 4 "$2 <python> <name> [do-force? 1=yes]"
-		
-		[[ -d $4 ]] && { echo "Directory '$4' already exists."; exit 1; }
-		
-		ver=$($3 -c 'import platform; print(platform.python_version())' 2> /dev/null | tr -d ' ')
-		if [[ "$3" != *"python"* ]] || [[ "$ver" == "" ]]; then
-                    echo "Error: Incorrect Python binary provided"
-		    exit 1
-		fi
-		
-		if [ "$5" != "1" ]; then conf_yn "Use Python $ver to create venv '$4'?" || exit 1; fi
-		
-		$3 -m venv $4
-		;;
-	    "init-venv-conda")
-		req_argn $# 4 "$2 <python-version> <name> \"pkg-1 pkg-2 ...\""
-		
-		[ $(which conda | wc -l | bc) == 0 ] && echo "Conda not found." && exit 1
-		
-		conda create -n $4 python=$3 $5
-		;;
 	    "install-spyder")
 		req_venv
+		req_y "This will install the Spyder IDE inside the currently active venv (i.e., '$VIRTUAL_ENV'). Continue?"
 		
-		if conf_yn "This will install the Spyder IDE inside the '$VIRTUAL_ENV' venv. Continue?"; then
-		    python -m pip install spyder
-		    echo "python ./lib/python3.6/site-packages/spyder/app/start.py" >> spyder-start.sh
-		    chmod a+x spyder-start.sh
-		    
-		    echo "Done."
-		    echo ""
-		    echo "Launch Spyder by typing: './spyder-start.sh'"
-		fi
+		python -m pip install spyder
+		echo "python ./lib/python3.6/site-packages/spyder/app/start.py" >> spyder-start.sh
+		chmod a+x spyder-start.sh
+		
+		echo "Done."
+		echo ""
+		echo "Launch Spyder by typing: './spyder-start.sh'"
 		;;
-	    "make-venv")
-		req_argn $# 5 "$2 <python> <name> <url>"
-		req_git_url $5
-		
-		conf_yn "This will initialize a new venv called '$4', fetch source code from '$5', and (if the remote repository contains the 'requirements.txt' file) install all the dependencies.  Continue?" || exit 1
-		
-		$0 python init-venv $3 $4 || exit 1
-		
-		cd $4
-		source ./bin/activate
-		
-		git init
-                git remote add origin $5
-		git pull origin master
-		
-		[ -f requirements.txt ] && conf_yn "Install dependencies?" && python -m pip install -r requirements.txt
+	    "venv")
+		case "$3" in
+		    "info")
+			echo "Every time you want to do work in a particular venv, that venv needs to be activated.  This ensures that all operations like installing packages happen inside of that venv and not in the global interpreter environment."
+			echo ""
+			echo "To ACTIVATE a venv, enter its directory and type: 'source ./bin/activate'."
+			echo "To CONFIRM you are using the venv's interpreter, type 'which python' and check the path."
+			echo "To EXIT a venv, type 'deactivate' (or end the terminal session)."
+			echo "To DELETE a venv, delete its directory (i.e., 'rm -r <dir-name>')."
+			;;
+		    "init")
+			req_argn $# 5 "$2 $3 <python> <name> [do-force? 1=yes]"
+			
+			[[ -d $5 ]] && { echo "Directory '$4' already exists."; exit 1; }
+			
+			ver=$($4 -c 'import platform; print(platform.python_version())' 2> /dev/null | tr -d ' ')
+			if [[ "$4" != *"python"* ]] || [[ "$ver" == "" ]]; then
+			    echo "Incorrect Python binary provided."
+			    exit 1
+			fi
+			
+			[ "$5" != "1" ] && req_y "Use Python $ver to create venv '$5'?"
+			
+			$4 -m venv $5
+			;;
+		    "make")
+			req_argn $# 6 "$2 $3 <python> <name> <url>"
+			req_git_url $6
+			req_y "This will initialize a new venv '$5', fetch source code from '$6', and install dependencies. Continue?"
+			
+			$0 python venv init $4 $5 || exit 1
+			
+			cd $5
+			source ./bin/activate
+			
+			git init
+			git remote add origin $6
+			git pull origin master
+			
+			[ -f requirements.txt ] && conf_yn "Install dependencies?" && python -m pip install -r requirements.txt
+			;;
+		    *) echo "$usage $2 {info,init,make}" && exit 1;;
+		esac
 		;;
-	    *) echo "$usage {$cmd_inf,inf-venv,inf-venv-conda,init-freebsd,init-macos,init-ubuntu,init-ubuntu-opt,init-venv,init-venv-conda,install-spyder}"; exit 1;;
+	    *) echo "$usage {$cmd_inf,install,install-spyder,venv}" && exit 1;;
 	esac
 	;;
     
     # ------------------------------------------------------------------------------------------
     "self")
         case "$2" in
-            "$cmd_inf") echo "Self-management of the $self_name commmand-line utility.";;
+            "$cmd_inf") echo "Self-management of the $self_name commmand-line utility. Supported operating systems: FreeBSD, MacOS, and Ubuntu.";;
 	    "edit") emacs -nw $0;;
+	    "remove-old-versions")
+		req_y "This will remove all previously retained versions of $self_name. Continue?"
+		rm $self_path/$self_name-old-v*
+		;;
             "update")
 		now=$(date +"%Y.%m.%d-%H.%M.%S")
 		self_name_tmp=${self_name}.new.$now.$$.$RANDOM
@@ -324,11 +508,11 @@ case "$cmd" in
                 fi
 		;;
 	    "version") echo "$version";;
-            *) echo "$usage {$cmd_inf,edit,update,version}"; exit 1;;
+            *) echo "$usage {$cmd_inf,edit,update,remove-old-versions,version}" && exit 1;;
 	esac
         ;;
     
     # ------------------------------------------------------------------------------------------
-    *) echo "Commands: latex ping pram python self"; exit 1;;
+    *) echo "Commands: conda latex ping pram python self" && exit 1;;
     
 esac
