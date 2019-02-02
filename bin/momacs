@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.31
+version=0.32
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -265,10 +265,10 @@ case "$cmd" in
 			echo "To DELETE a venv, type 'conda remove -n <venv-name> --all'."
 			;;
 		    "init")
-			req_argn $# 4 "$2 $3 <name> \"pkg pkg ...\""
+			req_argn $# 4 "$2 $3 <name>"
 			req_prog conda
 			
-			conda create -n $4 $5
+			conda create -n $4
 			;;
 		    *) echo "$usage $2 {git,info,init}" && exit 1;;
 		esac
