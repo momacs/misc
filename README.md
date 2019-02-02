@@ -15,8 +15,6 @@ On Ubuntu, do:
 sudo apt install -y curl git
 ```
 
-Fo course, you could use `wget` as well.
-
 #### Install
 To download the utility and make it executable, run the following commands:
 ```
