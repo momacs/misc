@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.21
+version=0.22
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -246,13 +246,7 @@ case "$cmd" in
 			echo "To LIST all venvs, type 'conda env list'"
 			echo "To DELETE a venv, type 'conda remove -n <venv-name> --all'."
 			;;
-		    "init")
-			req_argn $# 5 "$2 $3 <name> \"pkg pkg ...\""
-			req_prog conda
-			
-			conda create -n $4 $5
-			;;
-		    "make")
+		    "git")
 			req_argn $# 5 "$2 $3 <name> <url>"
 			req_git_url $5
 			req_y "This will initialize a new venv '$4', fetch source code from '$5', and install dependencies. Continue?"
@@ -268,7 +262,13 @@ case "$cmd" in
 			
 			[ -f requirements.txt ] && conf_yn "Install dependencies?" && python -m pip install -r requirements.txt
 			;;
-		    *) echo "$usage $2 {info,init,make}" && exit 1;;
+		    "init")
+			req_argn $# 5 "$2 $3 <name> \"pkg pkg ...\""
+			req_prog conda
+			
+			conda create -n $4 $5
+			;;
+		    *) echo "$usage $2 {info,git,init}" && exit 1;;
 		esac
 		;;
 	    *) echo "$usage {$cmd_inf,install,install-mini,venv}" && exit 1;;
@@ -321,8 +321,7 @@ case "$cmd" in
 	    "venv")
 		case "$3" in
 		    "make")
-			$0 $cmd $3 _make-prereq || exit 1
-			
+			$0 python venv _git-prereq || exit 1
 			$0 python venv make python3.6 $prj_name $url_github/${cmd}.git || exit 1
 			
 			echo "Done."
@@ -334,8 +333,7 @@ case "$cmd" in
 			echo "To deactivate the '$cmd' venv, type 'deactivate'.  For more info on Python venvs, type '$self_name python venv info'."
 			;;
 		    "make-conda")
-			$0 $cmd $3 _make-prereq || exit 1
-			
+			$0 python venv _git-prereq || exit 1
 			$0 conda venv make $cmd $url_github/${cmd}.git || exit 1
 			
 			echo "Done."
@@ -346,15 +344,6 @@ case "$cmd" in
 			echo "python sim.py"
 			echo ""
 			echo "To deactivate the '$cmd' venv, type 'source deactivate'.  For more info on conda venvs, type '$self_name conda venv info'."
-			;;
-		    "_make-prereq")
-			is_prog git && return 0
-			
-			case "$(uname)" in
-			    "Darwin") ;;
-			    "FreeBSD") sudo pkg install -y git;;
-			    "Linux")   sudo apt install -y git;;
-			esac
 			;;
 		    "update" | "update-conda")
 			req_git_repo_remote $url_github/${prj_name}.git
@@ -466,6 +455,15 @@ case "$cmd" in
 		;;
 	    "venv")
 		case "$3" in
+		    "_git-prereq")
+			is_prog git && return 0
+			
+			case "$(uname)" in
+			    "Darwin") ;;
+			    "FreeBSD") sudo pkg install -y git;;
+			    "Linux")   sudo apt install -y git;;
+			esac
+			;;
 		    "info")
 			echo "Every time you want to do work in a particular venv, that venv needs to be activated.  This ensures that all operations like installing packages happen inside of that venv and not in the global interpreter environment."
 			echo ""
@@ -473,6 +471,24 @@ case "$cmd" in
 			echo "To CONFIRM you are using the venv's interpreter, type 'which python' and check the path."
 			echo "To EXIT a venv, type 'deactivate' (or end the terminal session)."
 			echo "To DELETE a venv, delete its directory (i.e., 'rm -r <dir-name>')."
+			;;
+		    "git")
+			req_argn $# 6 "$2 $3 <python> <name> <url>"
+			req_git_url $6
+			req_y "This will initialize a new venv '$5', fetch source code from '$6', and install dependencies. Continue?"
+			
+			$0 $cmd $2 _make-prereq || exit 1
+			
+			$0 python venv init $4 $5 || exit 1
+			
+			cd $5
+			source ./bin/activate
+			
+			git init
+			git remote add origin $6
+			git pull origin master
+			
+			[ -f requirements.txt ] && conf_yn "Install dependencies?" && python -m pip install -r requirements.txt
 			;;
 		    "init")
 			req_argn $# 5 "$2 $3 <python> <name> [do-force? 1=yes]"
@@ -489,23 +505,7 @@ case "$cmd" in
 			
 			$4 -m venv $5
 			;;
-		    "make")
-			req_argn $# 6 "$2 $3 <python> <name> <url>"
-			req_git_url $6
-			req_y "This will initialize a new venv '$5', fetch source code from '$6', and install dependencies. Continue?"
-			
-			$0 python venv init $4 $5 || exit 1
-			
-			cd $5
-			source ./bin/activate
-			
-			git init
-			git remote add origin $6
-			git pull origin master
-			
-			[ -f requirements.txt ] && conf_yn "Install dependencies?" && python -m pip install -r requirements.txt
-			;;
-		    *) echo "$usage $2 {info,init,make}" && exit 1;;
+		    *) echo "$usage $2 {info,git,init}" && exit 1;;
 		esac
 		;;
 	    *) echo "$usage {$cmd_inf,install,install-spyder,venv}" && exit 1;;
