@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.19
+version=0.20
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -168,6 +168,8 @@ case "$cmd" in
         case "$2" in
             "$cmd_inf") echo "Anaconda and Miniconda routines.";;
 	    "install")
+		req_y "This will install Anaconda distribution. Continue?"
+		
 		case "$(uname)" in
 		    "Darwin")  $0 $cmd _install-macos   || exit 1;;
 		    "FreeBSD") $0 $cmd _install-freebsd || exit 1;;
@@ -177,6 +179,7 @@ case "$cmd" in
 		;;
 	    "_install-freebsd")
 		req_os "FreeBSD"
+		echo "Anaconda currently does not support FreeBSD."
 		;;
 	    "_install-macos")
 		req_os "Darwin"
@@ -186,6 +189,38 @@ case "$cmd" in
 		bash $file
 		;;
 	    "_install-ubuntu")
+		req_os_ubuntu
+		
+		if [ is_64b_arch ]
+		then file=Miniconda3-latest-Linux-x86_64.sh
+		else file=Miniconda3-latest-Linux-x86.sh
+		fi
+		
+		wget https://repo.anaconda.com/miniconda/$file
+		bash $file
+		;;
+	    "install-mini")
+		req_y "This will install Miniconda. Continue?"
+		
+		case "$(uname)" in
+		    "Darwin")  $0 $cmd _install-mini-macos   || exit 1;;
+		    "FreeBSD") $0 $cmd _install-mini-freebsd || exit 1;;
+		    "Linux")   $0 $cmd _install-mini-ubuntu  || exit 1;;
+		    *) echo "Unsupported operating system." && exit 1;;
+		esac
+		;;
+	    "_install-mini-freebsd")
+		req_os "FreeBSD"
+		echo "Anaconda currently does not support FreeBSD."
+		;;
+	    "_install-mini-macos")
+		req_os "Darwin"
+		
+		file=Miniconda3-latest-MacOSX-x86_64.sh
+		curl -s -o $file https://repo.anaconda.com/miniconda/$file
+		bash $file
+		;;
+	    "_install-mini-ubuntu")
 		req_os_ubuntu
 		
 		if [ is_64b_arch ]
@@ -232,7 +267,7 @@ case "$cmd" in
 		    *) echo "$usage $2 {info,init,make}" && exit 1;;
 		esac
 		;;
-	    *) echo "$usage {$cmd_inf,install,install-spyder,venv}" && exit 1;;
+	    *) echo "$usage {$cmd_inf,install,install-mini,venv}" && exit 1;;
 	esac
 	;;
     
