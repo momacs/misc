@@ -242,10 +242,12 @@ case "$cmd" in
 			req_git_url $5
 			req_y "This will initialize a new venv '$4', fetch source code from '$5', and install dependencies. Continue?"
 			
-			$0 conda venv init $4 || exit 1
+			[[ -d $4 ]] && echo "Directory '$4' already exists." && exit 1
 			
-			/envs/$4
-			conda activate $4
+			$0 conda venv init $4 || exit 1
+			source activate $4
+			
+			mkdir $4 && cd $4
 			
 			git init
 			git remote add origin $5
@@ -328,8 +330,7 @@ case "$cmd" in
 			echo ""
 			echo "The latest version of PRAM is located in '$cmd' directory.  To run it, type:"
 			echo "source ./$cmd/bin/activate"
-			echo "cd ./$cmd/src"
-			echo "python sim.py"
+			echo "python ./$cmd/src/sim.py"
 			echo ""
 			echo "To deactivate the '$cmd' venv, type 'deactivate'.  For more info on Python venvs, type '$self_name python venv info'."
 			;;
@@ -341,8 +342,7 @@ case "$cmd" in
 			echo ""
 			echo "The latest version of PRAM is located in '$cmd' directory.  To run it, type:"
 			echo "source activate $cmd"
-			echo "cd ./$cmd/src"
-			echo "python sim.py"
+			echo "python ./$cmd/src/sim.py"
 			echo ""
 			echo "To deactivate the '$cmd' venv, type 'source deactivate'.  For more info on conda venvs, type '$self_name conda venv info'."
 			;;
@@ -488,7 +488,7 @@ case "$cmd" in
 		    "init")
 			req_argn $# 5 "$2 $3 <python> <name> [do-force? 1=yes]"
 			
-			[[ -d $5 ]] && { echo "Directory '$5' already exists."; exit 1; }
+			[[ -d $5 ]] && echo "Directory '$5' already exists." && exit 1
 			
 			ver=$($4 -c 'import platform; print(platform.python_version())' 2> /dev/null | tr -d ' ')
 			if [[ "$4" != *"python"* ]] || [[ "$ver" == "" ]]; then
