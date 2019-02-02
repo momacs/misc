@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.20
+version=0.21
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -184,20 +184,22 @@ case "$cmd" in
 	    "_install-macos")
 		req_os "Darwin"
 		
-		file=Miniconda3-latest-MacOSX-x86_64.sh
-		curl -s -o $file https://repo.anaconda.com/miniconda/$file
+		file=Anaconda3-2018.12-MacOSX-x86_64.sh
+		curl -s -o $file https://repo.anaconda.com/archive/$file
 		bash $file
+		rm $file
 		;;
 	    "_install-ubuntu")
 		req_os_ubuntu
 		
 		if [ is_64b_arch ]
-		then file=Miniconda3-latest-Linux-x86_64.sh
-		else file=Miniconda3-latest-Linux-x86.sh
+		then file=Anaconda3-2018.12-Linux-x86_64.sh
+		else file=Anaconda3-2018.12-Linux-x86.sh
 		fi
 		
-		wget https://repo.anaconda.com/miniconda/$file
+		wget https://repo.anaconda.com/archive/$file
 		bash $file
+		rm $file
 		;;
 	    "install-mini")
 		req_y "This will install Miniconda. Continue?"
@@ -219,6 +221,7 @@ case "$cmd" in
 		file=Miniconda3-latest-MacOSX-x86_64.sh
 		curl -s -o $file https://repo.anaconda.com/miniconda/$file
 		bash $file
+		rm $file
 		;;
 	    "_install-mini-ubuntu")
 		req_os_ubuntu
@@ -230,6 +233,7 @@ case "$cmd" in
 		
 		wget https://repo.anaconda.com/miniconda/$file
 		bash $file
+		rm $file
 		;;
 	    "venv")
 		case "$3" in
