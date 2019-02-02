@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.18
+version=0.19
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -185,7 +185,7 @@ case "$cmd" in
 		curl -s -o $file https://repo.anaconda.com/miniconda/$file
 		bash $file
 		;;
-	    "_install-linux")
+	    "_install-ubuntu")
 		req_os_ubuntu
 		
 		if [ is_64b_arch ]
@@ -377,8 +377,6 @@ case "$cmd" in
 		brew install python3
 		;;
 	    "_install-ubuntu")
-		echo "Not implemented yet. Instead, use: $self_name $cmd init-ubuntu-opt" && exit 0
-		
 		req_os_ubuntu
 		req_y "This will install Python 3. Continue?"
 		
@@ -395,8 +393,6 @@ case "$cmd" in
 		sudo python3 -m pip install --upgrade pip
 		;;
 	    "_install-ubuntu-opt")
-		echo "Not implemented yet. Instead, use: $self_name $cmd install-py3-ubuntu" && exit 0
-		
 		req_os_ubuntu
 		req_y "This will download and compile Python 3.6.3 with optimizations enabled. Continue?"
 		
