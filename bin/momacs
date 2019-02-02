@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.24
+version=0.25
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -263,7 +263,7 @@ case "$cmd" in
 			[ -f requirements.txt ] && conf_yn "Install dependencies?" && python -m pip install -r requirements.txt
 			;;
 		    "init")
-			req_argn $# 5 "$2 $3 <name> \"pkg pkg ...\""
+			req_argn $# 4 "$2 $3 <name> \"pkg pkg ...\""
 			req_prog conda
 			
 			conda create -n $4 $5
