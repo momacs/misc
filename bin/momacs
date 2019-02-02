@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.30
+version=0.31
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -128,7 +128,7 @@ req_os_ubuntu() {
 # Requires program $1 installed
 #
 req_prog() {
-    [ is_prog $1 ] && echo "Required program '$1' missing." && exit $ret_req_prog
+    is_prog $1 && echo "Required program '$1' missing." && exit $ret_req_prog
     return 0
 }
 
