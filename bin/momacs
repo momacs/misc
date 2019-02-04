@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.44
+version=0.45
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -373,7 +373,7 @@ case "$cmd" in
 		
 		sudo pkg install py36-scipy py36-numpy
 		sudo python3.6 -m pip install attrs
-		$0 $cmd clone-repo
+		$0 $cmd repo clone
 		;;
 	    "update" | "update-conda") $0 $cmd repo update;;
 	    *) echo "$usage {$cmd_inf,repo,setup,setup-conda,update,update-conda}" && exit 1;;
