@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.37
+version=0.38
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -322,7 +322,8 @@ case "$cmd" in
 		;;
 	    "make-freebsd")
 		req_y "This will install pram dependencies (i.e., scipy, numpy, and attrs) in the global Python interpreter, and clone the GitHub repository. This is only currently supported way of running pram on FreeBSD because installing numpy in a venv fails. Effort will be exerted to ameliorate the situation in the future."
-		req_prog python3.6
+		
+		is_prog python3.6 || { $0 python install || exit 1 }
 		
 		sudo pkg install py36-scipy py36-numpy
 		sudo python3.6 -m pip install attrs
@@ -375,7 +376,7 @@ case "$cmd" in
 		    *) echo "$usage $2 {make,make-conda,update,update-conda}" && exit 1;;
 		esac
 		;;
-	    *) echo "$usage {$cmd_inf,clone-repo,venv}" && exit 1;;
+	    *) echo "$usage {$cmd_inf,clone-repo,make-freebsd,venv}" && exit 1;;
 	esac
 	;;
     
@@ -391,7 +392,7 @@ case "$cmd" in
 		    *) echo "Unsupported operating system." && exit 1;;
 		esac
 		
-		echo "Done. All python symlinks are located in /usr/local/bin/."
+		echo "Done. All python symlinks are located in /usr/local/bin"
 		;;
 	    "_install-freebsd")
 		req_os "FreeBSD"
