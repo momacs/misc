@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.42
+version=0.43
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -333,7 +333,7 @@ case "$cmd" in
 		;;
 	    "setup")
 		#[ "$(uname)" == "FreeBSD" ] && echo "Due to numpy installation, venvs are not currently supported on FreeBSD. To continue, run: $self_name $cmd make-freebsd " && exit 1
-		[ "$(uname)" == "FreeBSD" ] && exit $($0 $cmd _setup-freebsd)
+		[ "$(uname)" == "FreeBSD" ] && $0 $cmd _setup-freebsd && exit 0
 		
 		$0 python venv _git-prereq || exit 1
 		$0 python venv git python3.6 $cmd $url_github/${cmd}.git 1 || exit 1
