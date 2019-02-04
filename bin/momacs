@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.47
+version=0.48
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -334,13 +334,13 @@ case "$cmd" in
 		;;
 	    "setup")
 		$0 python install || exit 1
+		$0 sys install-git || exit 1
 		
 		if [ "$(uname)" == "FreeBSD" ]; then
 		    $0 $cmd _setup-freebsd
 		    exit 0
 		fi
 		
-		$0 python venv _git-prereq || exit 1
 		$0 python venv git python3 $cmd $url_github/${cmd}.git 1 || exit 1
 		
 		echo "Done."
@@ -352,7 +352,6 @@ case "$cmd" in
 		echo "To deactivate the '$cmd' venv, type 'deactivate'.  For more info on Python venvs, type '$self_name python venv info'."
 		;;
 	    "setup-conda")
-		$0 python venv _git-prereq || exit 1
 		$0 conda venv git $cmd $url_github/${cmd}.git || exit 1
 		
 		echo "Done."
@@ -369,7 +368,7 @@ case "$cmd" in
 		#sudo pkg install blas lapack
 		#[ ! -f /usr/local/bin/gfortran ] && ln -s /usr/local/bin/gfortran43 /usr/local/bin/gfortran
 		
-		sudo pkg install py36-scipy py36-numpy
+		sudo pkg install -y git py36-scipy py36-numpy
 		sudo python3.6 -m pip install attrs
 		$0 $cmd clone
 		;;
@@ -478,15 +477,6 @@ case "$cmd" in
 		;;
 	    "venv")
 		case "$3" in
-		    "_git-prereq")
-			is_prog git && exit 0
-			
-			case "$(uname)" in
-			    "Darwin") ;;
-			    "FreeBSD") sudo pkg install -y git;;
-			    "Linux")   sudo apt install -y git;;
-			esac
-			;;
 		    "git")
 			req_argn $# 6 "$2 $3 <python> <name> <url>"
 			req_git_url $6
@@ -569,6 +559,22 @@ case "$cmd" in
         ;;
     
     # ------------------------------------------------------------------------------------------
-    *) echo "Commands: conda latex ping pram python self" && exit 1;;
+    "sys")
+        case "$2" in
+            "$cmd_inf") echo "General system management and routines.";;
+	    "install-git")
+		is_prog git && exit 0
+		
+		case "$(uname)" in
+		    "FreeBSD") sudo pkg install -y git;;
+		    "Linux")   sudo apt install -y git;;
+		esac
+		;;
+            *) echo "$usage {$cmd_inf,install-git}" && exit 1;;
+	esac
+        ;;
+    
+    # ------------------------------------------------------------------------------------------
+    *) echo "Commands: conda latex ping pram python self sys" && exit 1;;
     
 esac
