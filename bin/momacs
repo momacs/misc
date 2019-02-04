@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.36
+version=0.37
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -320,6 +320,14 @@ case "$cmd" in
 		[ -d ./$cmd ] && echo "The directory $cmd already exists." && exit 1
 		git clone $url_github/$cmd
 		;;
+	    "make-freebsd")
+		req_y "This will install pram dependencies (i.e., scipy, numpy, and attrs) in the global Python interpreter, and clone the GitHub repository. This is only currently supported way of running pram on FreeBSD because installing numpy in a venv fails. Effort will be exerted to ameliorate the situation in the future."
+		req_prog python3.6
+		
+		sudo pkg install py36-scipy py36-numpy
+		sudo python3.6 -m pip install attrs
+		$0 $cmd clone-repo
+		;;
 	    "venv")
 		case "$3" in
 		    "_make-prereq")
@@ -329,11 +337,12 @@ case "$cmd" in
 			    
 			    req_y "Some dependencies (i.e., blas and lapack) need to installed via 'pkg'. Continue?"
 			    sudo pkg install blas lapack
-			    
+			    [ ! -f /usr/local/bin/gfortran ] && ln -s /usr/local/bin/gfortran43 /usr/local/bin/gfortran
 			fi
 			;;
 		    "make")
-			$0 $cmd $2 _make-prereq || exit 1
+			[ "$(uname)" == "FreeBSD" ] && echo "Due to numpy installation, venvs are not currently supported on FreeBSD. To continue, run: $self_name $cmd make-freebsd " && exit 1
+			
 			$0 python venv _git-prereq || exit 1
 			$0 python venv git python3.6 $cmd $url_github/${cmd}.git 1 || exit 1
 			
