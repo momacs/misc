@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.38
+version=0.39
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -323,7 +323,9 @@ case "$cmd" in
 	    "make-freebsd")
 		req_y "This will install pram dependencies (i.e., scipy, numpy, and attrs) in the global Python interpreter, and clone the GitHub repository. This is only currently supported way of running pram on FreeBSD because installing numpy in a venv fails. Effort will be exerted to ameliorate the situation in the future."
 		
-		is_prog python3.6 || { $0 python install || exit 1 }
+		if [ ! is_prog python3.6 ]; then
+		    $0 python install || exit 1
+		fi
 		
 		sudo pkg install py36-scipy py36-numpy
 		sudo python3.6 -m pip install attrs
