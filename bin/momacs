@@ -374,7 +374,7 @@ case "$cmd" in
 		;;
 	    "update" | "update-conda")
 		req_git_repo_remote $url_github/${cmd}.git
-		req_y "If a more recent version of PRAM exists on GitHub, it might overwrite changes you've made to the 'src' directory. Continue?"
+		req_y "If a more recent version of PRAM exists on GitHub, it might overwrite changes you've made to your local repository. Continue?"
 		
 		git pull origin master
 		;;
@@ -398,14 +398,12 @@ case "$cmd" in
 		;;
 	    "_install-freebsd")
 		req_os "FreeBSD"
-		#req_y "This will install Python 3 (unless already present). Continue?"
 		
 		sudo pkg install -y python36 py36-pip
 		sudo python3.6 -m pip install --upgrade pip
 		;;
 	    "_install-macos")
 		req_os "Darwin"
-		#req_y "This will install the HomeBrew package manager (or update it, if already present) and use it to install Python 3. Continue?"
 		
 		if ! is_prog brew; then
 		    echo "HomeBrew not found, installing..."
@@ -419,7 +417,6 @@ case "$cmd" in
 		;;
 	    "_install-ubuntu")
 		req_os_ubuntu
-		#req_y "This will install Python 3 (unless already present). Continue?"
 		
 		#sudo apt install -y build-essential libssl-dev libffi-dev python-dev
 		sudo apt install -y python3 python3-pip python3-venv
@@ -428,7 +425,6 @@ case "$cmd" in
 		;;
 	    "_install-ubuntu-opt")
 		req_os_ubuntu
-		#req_y "This will download and compile Python 3.6.3 with optimizations enabled. Continue?"
 		
                 mkdir -p ~/dev/py
                 cd ~/dev/py
