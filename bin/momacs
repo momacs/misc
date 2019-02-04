@@ -4,7 +4,7 @@
 #     2018.12.15 - ...: Tomek D. Loboda (tomek.loboda@gmail.com; post-doctoral research associate; original author)
 
 
-version=0.34
+version=0.35
     # IMPORTANT: This needs to be a number and that number must be at the end of the line
 
 self_name=$(basename $0)
@@ -323,9 +323,13 @@ case "$cmd" in
 	    "venv")
 		case "$3" in
 		    "_make-prereq")
-			if "$(uname)" == "FreeBSD"; then
-			    conf_y "On FreeBSD, numpy needs to be installed using 'pkg'. Continue?" || exit 1
-			    sudo pkg install py36-numpy
+			if [ "$(uname)" == "FreeBSD" ]; then
+			    #conf_y "Some dependencies (i.e., scipy and numpy) need to installed via 'pkg'. Continue?" || exit 1
+			    #sudo pkg install py36-scipy py36-numpy
+			    
+			    conf_y "Some dependencies (i.e., blas and lapack) need to installed via 'pkg'. Continue?" || exit 1
+			    sudo pkg install blas lapack
+			    
 			fi
 			;;
 		    "make")
